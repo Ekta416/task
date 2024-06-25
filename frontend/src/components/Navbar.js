@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+// import logo from "../img/logo.png";
 import "./Navbar.css";
 import { Link } from "react-router-dom";
 import { LoginContext } from "../context/LoginContext";
@@ -10,9 +11,13 @@ export default function Navbar({ login }) {
     if (login || token) {
       return [
         <>
-          
+          <Link to="/profile">
+            <li>Profile</li>
+          </Link>
           <Link to="/createPost">Create Post</Link>
-          
+          <Link style={{ marginLeft: "20px" }} to="/followingpost">
+            My Following
+          </Link>
           <Link to={""}>
             <button className="primaryBtn" onClick={() => setModalOpen(true)}>
               Log Out
@@ -36,8 +41,8 @@ export default function Navbar({ login }) {
 
   return (
     <div className="navbar">
-      <h2>TALK A TIVE</h2>
-
+      {/* <img src={logo} alt="" /> */}
+      <h1>TALK A TIVE</h1>
       <ul className="nav-menu">{loginStatus()}</ul>
     </div>
   );

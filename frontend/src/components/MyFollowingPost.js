@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
-export default function Home() {
-  const picLink = "https://cdn-icons-png.flaticon.com/128/3177/3177440.png";
+export default function MyFolliwngPost() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [comment, setComment] = useState("");
   const [show, setShow] = useState(false);
-  const [item, setItem] = useState(null);
+  const [item, setItem] = useState([]);
 
   // Toast functions
   const notifyA = (msg) => toast.error(msg);
@@ -19,12 +18,11 @@ export default function Home() {
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     if (!token) {
-      navigate("/signup");
-      return; // Exit the effect if no token
+      navigate("./signup");
     }
 
     // Fetching all posts
-    fetch("http://localhost:5000/allposts", {
+    fetch("http://localhost:5000/myfollwingpost", {
       headers: {
         Authorization: "Bearer " + localStorage.getItem("jwt"),
       },
@@ -35,12 +33,16 @@ export default function Home() {
         setData(result);
       })
       .catch((err) => console.log(err));
-  }, [navigate]);
+  }, []);
 
   // to show and hide comments
   const toggleComment = (posts) => {
-    setShow(!show);
-    setItem(posts);
+    if (show) {
+      setShow(false);
+    } else {
+      setShow(true);
+      setItem(posts);
+    }
   };
 
   const likePost = (id) => {
@@ -57,7 +59,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((result) => {
         const newData = data.map((posts) => {
-          if (posts._id === result._id) {
+          if (posts._id == result._id) {
             return result;
           } else {
             return posts;
@@ -67,7 +69,6 @@ export default function Home() {
         console.log(result);
       });
   };
-
   const unlikePost = (id) => {
     fetch("http://localhost:5000/unlike", {
       method: "put",
@@ -82,7 +83,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((result) => {
         const newData = data.map((posts) => {
-          if (posts._id === result._id) {
+          if (posts._id == result._id) {
             return result;
           } else {
             return posts;
@@ -109,7 +110,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((result) => {
         const newData = data.map((posts) => {
-          if (posts._id === result._id) {
+          if (posts._id == result._id) {
             return result;
           } else {
             return posts;
@@ -127,21 +128,19 @@ export default function Home() {
       {/* card */}
       {data.map((posts) => {
         return (
-          <div className="card" key={posts._id}>
+          <div className="card">
             {/* card header */}
             <div className="card-header">
               <div className="card-pic">
                 <img
-                  src={posts.postedBy?.Photo ? posts.postedBy.Photo : picLink}
+                  src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cGVyc29ufGVufDB8MnwwfHw%3D&auto=format&fit=crop&w=500&q=60"
                   alt=""
                 />
               </div>
               <h5>
-                {posts.postedBy && (
-                  <Link to={`/profile/${posts.postedBy._id}`}>
-                    {posts.postedBy.name}
-                  </Link>
-                )}
+                <Link to={`/profile/${posts.postedBy._id}`}>
+                  {posts.postedBy.name}
+                </Link>
               </h5>
             </div>
             {/* card image */}
@@ -210,7 +209,7 @@ export default function Home() {
       })}
 
       {/* show Comment */}
-      {show && item && (
+      {show && (
         <div className="showComment">
           <div className="container">
             <div className="postPic">
@@ -238,7 +237,7 @@ export default function Home() {
               >
                 {item.comments.map((comment) => {
                   return (
-                    <p className="comm" key={comment._id}>
+                    <p className="comm">
                       <span
                         className="commenter"
                         style={{ fontWeight: "bolder" }}

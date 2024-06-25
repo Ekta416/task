@@ -6,31 +6,15 @@ const { route } = require("./auth");
 const POST = mongoose.model("POST")
 
 
-// Route all user post show
-// router.get("/allposts", requireLogin, (req, res) => {
-//     POST.find()
-//         .populate("postedBy", "_id name Photo")
-//         .populate("comments.postedBy", "_id name")
-//         .sort("-createdAt")
-//         .then(posts => res.json(posts))
-//         .catch(err => console.log(err))
-// })
-
-//only login user
-router.get("/allposts", requireLogin,(req, res) => {
-    POST.find({ postedBy: req.user._id }) 
-        .populate("postedBy", "_id name")
+// Route
+router.get("/allposts", requireLogin, (req, res) => {
+    POST.find()
+        .populate("postedBy", "_id name Photo")
         .populate("comments.postedBy", "_id name")
         .sort("-createdAt")
-        .then(myposts => {
-            res.json(myposts)
-        })
-        .catch(error => {
-            console.error("Error fetching posts:", error);
-            res.status(500).json({ error: "An error occurred while fetching posts" });
-        });
+        .then(posts => res.json(posts))
+        .catch(err => console.log(err))
 })
-
 
 router.post("/createPost", requireLogin, (req, res) => {
     const { body, pic } = req.body;
@@ -49,7 +33,15 @@ router.post("/createPost", requireLogin, (req, res) => {
     }).catch(err => console.log(err))
 })
 
-
+router.get("/myposts", requireLogin, (req, res) => {
+    POST.find({ postedBy: req.user._id })
+        .populate("postedBy", "_id name")
+        .populate("comments.postedBy", "_id name")
+        .sort("-createdAt")
+        .then(myposts => {
+            res.json(myposts)
+        })
+})
 
 router.put("/like", requireLogin, (req, res) => {
     POST.findByIdAndUpdate(req.body.postId, {
@@ -102,7 +94,36 @@ router.put("/comment", requireLogin, (req, res) => {
         })
 })
 
+// Api to delete post
+router.delete("/deletePost/:postId", requireLogin, (req, res) => {
+    POST.findOne({ _id: req.params.postId })
+        .populate("postedBy", "_id")
+        .exec((err, post) => {
+            if (err || !post) {
+                return res.status(422).json({ error: err })
+            }
 
+            if (post.postedBy._id.toString() == req.user._id.toString()) {
 
+                post.remove()
+                    .then(result => {
+                        return res.json({ message: "Successfully deleted" })
+                    }).catch((err) => {
+                        console.log(err)
+                    })
+            }
+        })
+})
+
+// to show following post
+router.get("/myfollwingpost", requireLogin, (req, res) => {
+    POST.find({ postedBy: { $in: req.user.following } })
+        .populate("postedBy", "_id name")
+        .populate("comments.postedBy", "_id name")
+        .then(posts => {
+            res.json(posts)
+        })
+        .catch(err => { console.log(err) })
+})
 
 module.exports = router
